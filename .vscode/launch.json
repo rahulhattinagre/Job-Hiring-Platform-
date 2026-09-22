@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-JobPortalApplication<JobPortal>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.jobportal.JobPortalApplication",
+            "projectName": "JobPortal",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
