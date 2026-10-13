@@ -7,6 +7,36 @@ import { registerUser } from "../../Services/UserService";
 import { signupValidation } from "../../Services/FormValidation";
 import { errorNotification, successNotification } from "../../Services/NotificationService";
 
+const getErrorMessage = (error: any, fallback: string) => {
+    if (error?.response) {
+        const status = error.response.status;
+        const data = error.response.data;
+        const backendMsg = data?.errorMessage || data?.message || data?.error;
+        if (backendMsg && typeof backendMsg === "string") {
+            return backendMsg;
+        }
+        if (status === 401) {
+            return "Invalid email or password.";
+        }
+        if (status === 409) {
+            return "User already exists.";
+        }
+        if (status === 400) {
+            return "Invalid request details. Please check your inputs.";
+        }
+        if (status === 500) {
+            return "Server error. Please try again later.";
+        }
+        return fallback;
+    }
+
+    if (error?.request) {
+        return "Unable to connect to the backend server. Please verify the server is running.";
+    }
+
+    return error?.message || fallback;
+};
+
 const SignUp = () => {
     const form = {
         name: "",
@@ -14,7 +44,7 @@ const SignUp = () => {
         password: "",
         confirmPassword: "",
         accountType: "APPLICANT"
-    }
+    };
     const [data, setData] = useState<{ [key: string]: string }>(form);
     const [formError, setFormError] = useState<{ [key: string]: string }>(form);
     const [loading, setLoading] = useState(false);
@@ -36,7 +66,7 @@ const SignUp = () => {
             if (data.password !== value) setFormError({ ...formError, [name]: "Passwords do not match." });
             else setFormError({ ...formError, confirmPassword: "" });
         }
-    }
+    };
     const handleSubmit = () => {
         setLoading(true);
         let valid = true, newFormError: { [key: string]: string } = {};
@@ -49,31 +79,24 @@ const SignUp = () => {
         setFormError(newFormError);
 
         if (valid === true) {
-            registerUser(data).then((res) => {
+            registerUser(data).then(() => {
                 setData(form);
                 successNotification("Registered Successfully", "Redirecting to login page...");
 
                 setTimeout(() => {
                     navigate("/login");
                     setLoading(false);
-                }, 4000)
+                }, 4000);
             }).catch((err) => {
-                console.log(err);
+                console.error("Registration error:", err);
                 setLoading(false);
-
-                const message =
-                    err?.response?.data?.errorMessage ||
-                    err?.response?.data?.message ||
-                    err?.message ||
-                    "Registration failed. Please try again.";
-
-                errorNotification("Registration Failed", message);
+                errorNotification("Registration Failed", getErrorMessage(err, "Registration failed. Please try again."));
             });
 
-        }else {
-    setLoading(false);
-}
-    }
+        } else {
+            setLoading(false);
+        }
+    };
     return <><LoadingOverlay
         visible={loading}
         zIndex={1000}
@@ -102,5 +125,5 @@ const SignUp = () => {
             <div className="text-center sm-mx:text-sm xs-mx:text-xs">Have an account?  <span className="text-bright-sun-400 hover:underline cursor-pointer sm-mx:text-sm xs-mx:text-xs" onClick={() => { navigate("/login"); setFormError(form); setData(form) }}>Login</span> </div>
 
         </div></>
-}
+};
 export default SignUp;

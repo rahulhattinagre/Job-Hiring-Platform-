@@ -1,6 +1,5 @@
 package com.jobportal.jwt;
 
-
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +24,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtHelper jwtHelper;
 
-
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return "OPTIONS".equalsIgnoreCase(request.getMethod());
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -38,7 +41,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //            throw new RuntimeException(e);
 //        }
         //Authorization
-
         String requestHeader = request.getHeader("Authorization");
         //Bearer 2352345235sdfrsfgsdfsdf
         // logger.info(" Header :  {}", requestHeader);
@@ -65,15 +67,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             }
 
-
         } else {
             logger.info("Invalid Header Value !! ");
         }
 
-
         //
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
 
             //fetch user detail from username
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
@@ -85,16 +84,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-
             } else {
                 logger.info("Validation fails !!");
             }
 
-
         }
 
         filterChain.doFilter(request, response);
-
 
     }
 }

@@ -15,11 +15,11 @@ import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { hideOverlay, showOverlay } from "../../Slices/OverlaySlice";
 
 const links = [
-    { name: "Find Jobs", url: "find-jobs" },
-    { name: "Find Talent", url: "find-talent" },
-    { name: "Post Job", url: "post-job/0" },
-    { name: "Posted Jobs", url: "posted-jobs/0" },
-    { name: "Job History", url: "job-history" }
+    { name: "Find Jobs",   url: "find-jobs",    roles: ["APPLICANT", "ADMIN"] },
+    { name: "Find Talent", url: "find-talent",  roles: ["EMPLOYER", "ADMIN"] },
+    { name: "Post Job",    url: "post-job/0",   roles: ["EMPLOYER", "ADMIN"] },
+    { name: "Posted Jobs", url: "posted-jobs/0", roles: ["EMPLOYER", "ADMIN"] },
+    { name: "Job History", url: "job-history",  roles: ["APPLICANT", "ADMIN"] }
 ]
 
 const Header = () => {
@@ -27,6 +27,10 @@ const Header = () => {
     const dispatch = useDispatch();
     const user = useSelector((state: any) => state.user);
     const token = useSelector((state: any) => state.jwt);
+    const accountType: string = user?.accountType || "";
+    const visibleLinks = accountType
+        ? links.filter(link => link.roles.includes(accountType))
+        : [];
     const location = useLocation();
     const navigate = useNavigate();
     useEffect(() => {
@@ -75,7 +79,7 @@ const Header = () => {
                 <div className="flex flex-col gap-6 items-center">
 
                     {
-                        links.map((link, index) => <div key={index} className=" h-full flex items-center">
+                        visibleLinks.map((link, index) => <div key={index} className=" h-full flex items-center">
                             <div className="hover:text-bright-sun-400 text-xl " key={index} onClick={() => handleClick(link.url)} >{link.name}</div>
                         </div>)
                     }
